@@ -1,0 +1,198 @@
+=====================================================================
+ LOST AND FOUND SYSTEM - PROJECT REQUIREMENTS 
+=====================================================================
+Assignment: Build a Lost & Found Web Application
+Tech Stack (Fixed):
+  - Frontend : React (Vite) + Plain CSS (no Tailwind)
+  - Backend  : Express (Node.js)
+  - Database : MongoDB (Mongoose)
+
+---------------------------------------------------------------------
+ 1. PROJECT OVERVIEW
+---------------------------------------------------------------------
+Build a web application where users can create posts about lost/found
+items, view all posts, and an admin can manage all users/posts/comments.
+There are two types of users: NORMAL USER and ADMIN.
+
+---------------------------------------------------------------------
+ 2. FRONTEND REQUIREMENTS (React + Vite + Plain CSS)
+---------------------------------------------------------------------
+Create the project with Vite and use PLAIN CSS (separate .css files).
+Use of any CSS framework (Tailwind/Bootstrap/MUI) is NOT allowed.
+
+ PAGES:
+  1) Home Page (/)            - Display all posts + search bar
+  2) Register Page (/register)
+  3) Login Page (/login)
+  4) Electronics Posts (/electronic)   - category filter: electronic items
+  5) Others Posts (/others)            - category filter: other items
+  6) Create Post (/write)              - form to add a lost/found item
+  7) Post Details (/posts/post/:id)    - single post + comments
+  8) Edit Post (/edit/:id)             - edit own post
+  9) My Posts (/myposts/:id)           - posts created by the logged-in user
+  10) Profile (/profile/:id)           - user profile information
+
+ ADMIN Pages (only for role = admin):
+     /admin            -> Admin Dashboard (statistics)
+     /admin/users      -> view/delete users
+     /admin/posts      -> view/delete posts
+     /admin/comments   -> view/delete comments
+
+ COMPONENTS (navbar, footer, post card, comment section, etc.)
+ - Protect /write route -> only for logged-in users
+ - Protect Admin routes -> only for users with admin role
+ - Use axios for all API calls
+ - Use react-router-dom for routing
+ - Use cookies (token) to keep the user logged in (context API)
+
+---------------------------------------------------------------------
+ 3. BACKEND REQUIREMENTS (Express + MongoDB)
+---------------------------------------------------------------------
+Build a REST API with the following routes. All responses must be JSON.
+
+ AUTH ROUTES (/api/auth)
+   - POST /register        -> create user (username, email, password)
+   - POST /login           -> verify password (bcrypt), store JWT token in cookie
+   - GET  /logout          -> clear token cookie
+   - GET  /refetch         -> verify token, return the current logged-in user
+
+ USER ROUTES (/api/users)
+   - PUT  /:id             -> update user profile
+   - GET  /:id             -> get a single user
+
+ POST ROUTES (/api/posts)
+   - POST /                -> create post (title, desc, photo, category, type)
+   - PUT  /:id             -> update post
+   - DELETE /:id           -> delete post
+   - GET  /                -> get all posts
+   - GET  /user/:userId    -> get posts by userId
+   - GET  /:id             -> get a single post
+
+ COMMENT ROUTES (/api/comments)
+   - POST /                -> add comment (comment, author, userId, postId)
+   - DELETE /:id           -> delete comment
+
+ ADMIN ROUTES (/api/admin)
+   - GET  /stats           -> total number of users, posts and comments
+   - GET  /users           -> all users
+   - DELETE /users/:id     -> delete a user
+   - GET  /posts           -> all posts
+   - DELETE /posts/:id     -> delete a post
+   - GET  /comments        -> all comments
+   - DELETE /comments/:id  -> delete a comment
+
+ IMAGE UPLOAD
+   - POST /api/upload      -> upload image using multer to the images/ folder
+
+---------------------------------------------------------------------
+ 4. DATABASE REQUIREMENTS (MongoDB - Mongoose)
+---------------------------------------------------------------------
+Database name: LostAndFound
+
+ COLLECTION: users
+    username (String, required, unique)
+    email    (String, required, unique)
+    password (String, required, hashed with bcrypt)
+    role     (String, enum: ['user','admin'], default 'user')
+    timestamps
+
+ COLLECTION: posts
+    title     (String, required)
+    desc      (String, required)
+    photo     (String)               // image filename/path
+    username  (String, required)
+    userId    (String, required)
+    categories (Array)               // e.g. ['electronic'] or ['other']
+    contactNo (String, required)     // contact number of the poster
+    type      (String)               // 'lost' or 'found'
+    timestamps
+
+ COLLECTION: comments
+    comment   (String, required)
+    author    (String, required)
+    userId    (ObjectId -> User)
+    postId    (ObjectId -> Post)
+    timestamps
+
+ NOTE: Never store passwords in plain text in the User model.
+       Always hash them before saving.
+
+---------------------------------------------------------------------
+ 5. SECURITY / EXTRA REQUIREMENTS
+---------------------------------------------------------------------
+ - Hash passwords with bcrypt
+ - JWT token based authentication (save token in cookie after login)
+ - Protect admin routes - only the admin should access them
+   (use verify middlewares)
+ - Only logged-in users can create/edit posts
+ - .env file: MONGODB URL, JWT SECRET, PORT
+ - Enable CORS for the frontend (http://localhost:5173)
+
+---------------------------------------------------------------------
+ 6. SUGGESTED FOLDER STRUCTURE
+---------------------------------------------------------------------
+ lost-and-found/
+ ├── frontend/                  # React (Vite) + Plain CSS
+ │   ├── public/
+ │   ├── src/
+ │   │   ├── components/        # shared components
+ │   │   ├── context/           # UserContext (logged-in user state)
+ │   │   ├── pages/             # all regular pages
+ │   │   ├── pages/admin/       # admin dashboard pages
+ │   │   ├── App.jsx            # routing setup
+ │   │   ├── main.jsx
+ │   └── package.json
+ ├── backend/                   # Express + MongoDB
+ │   ├── models/                # User.js, Post.js, Comment.js
+ │   ├── routes/                # auth.js, users.js, posts.js,
+ │   │                          # comments.js, admin.js
+ │   ├── images/                # uploaded images folder
+ │   ├── middlewares/           # auth/admin verification
+ │   ├── verifyToken.js
+ │   ├── index.js               # server entry point
+ │   └── .env
+ └── README.md (instructions)
+
+---------------------------------------------------------------------
+ 7. DEPENDENCIES (install with npm)
+---------------------------------------------------------------------
+ FRONTEND dependencies:
+   react, react-dom, react-router-dom, axios, react-icons
+ FRONTEND devDependencies:
+   vite, @vitejs/plugin-react
+
+ BACKEND dependencies:
+   express, mongoose, bcrypt, jsonwebtoken, cookie-parser,
+   cors, dotenv, multer, path
+ BACKEND devDependencies:
+   nodemon
+
+---------------------------------------------------------------------
+ 8. HOW TO RUN (checking the work)
+---------------------------------------------------------------------
+ Make sure MongoDB is running locally before you test.
+
+ BACKEND:
+   cd backend
+   npm install
+   npm run dev        # runs with nodemon, port comes from .env
+
+ FRONTEND:
+   cd frontend
+   npm install
+   npm run dev        # http://localhost:5173
+
+ How to create an admin:
+   First register a user through the frontend, then open MongoDB Compass
+   -> LostAndFound db -> users collection -> change that user's role
+   to 'admin' and save. Now login with that account to access the
+   admin dashboard.
+
+---------------------------------------------------------------------
+ 9. DELIVERABLES (what the student must submit)
+---------------------------------------------------------------------
+ [ ] Complete running code (frontend + backend)
+ [ ] README file with setup and run instructions
+ [ ] .env file included (with demo values)
+ [ ] Project packed as a ZIP file
+=====================================================================
