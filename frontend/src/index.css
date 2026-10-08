@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-screen bg-slate-50 text-slate-800 selection:bg-blue-100 selection:text-blue-900;
+  }
+
+  input, textarea, select, button {
+    @apply transition-colors duration-150;
+  }
+}

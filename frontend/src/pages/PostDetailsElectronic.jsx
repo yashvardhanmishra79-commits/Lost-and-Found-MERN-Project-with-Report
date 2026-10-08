@@ -1,9 +1,10 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import Comment from "../components/Comment";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import { BiEdit } from "react-icons/bi";
 import { MdDelete } from "react-icons/md";
+import { FiArrowLeft, FiClock, FiTag, FiUser, FiPhone, FiSend, FiMessageSquare } from "react-icons/fi";
 import axios from "axios";
 import { URL, IF } from "../url";
 import { useContext, useEffect, useState } from "react";
@@ -29,9 +30,10 @@ const PostDetailsElectronic = () => {
   };
 
   const handleDeletePost = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
-      const res = await axios.delete(URL+"/api/posts/"+postId,{
-        withCredentials: true
+      await axios.delete(URL + "/api/posts/" + postId, {
+        withCredentials: true,
       });
       navigate("/Electronic");
     } catch (err) {
@@ -41,7 +43,6 @@ const PostDetailsElectronic = () => {
 
   useEffect(() => {
     fetchPost();
-    console.log(user)
   }, [postId]);
 
   const fetchPostComments = async () => {
@@ -51,7 +52,7 @@ const PostDetailsElectronic = () => {
       setComments(res.data);
       setLoader(false);
     } catch (err) {
-      setLoader(true);
+      setLoader(false);
       console.log(err);
     }
   };
@@ -59,31 +60,34 @@ const PostDetailsElectronic = () => {
   useEffect(() => {
     fetchPostComments();
   }, [postId]);
-const getTypeBadge = (type) => {
-    type=!type?"lost":type
-    if (!type) return null;
-    const typeLower = type.toLowerCase();
-    let bgColor = "bg-gray-300";
-    let textColor = "text-gray-700";
 
-    if (typeLower === "lost") {
-      bgColor = "bg-red-200";
-      textColor = "text-red-700";
-    } else if (typeLower === "found") {
-      bgColor = "bg-green-200";
-      textColor = "text-green-700";
-    }
+  const getTypeBadge = (type) => {
+    const safeType = !type ? "Lost" : type;
+    const isFound = safeType.toLowerCase() === "found";
 
     return (
-      <span className={`px-3 py-1 rounded-full font-bold text-l ${bgColor} ${textColor} uppercase`}>
-        {type}
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wider border shadow-xs ${
+          isFound
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : "bg-rose-50 text-rose-700 border-rose-200"
+        }`}
+      >
+        <span
+          className={`w-2 h-2 rounded-full ${
+            isFound ? "bg-emerald-500" : "bg-rose-500 animate-pulse"
+          }`}
+        ></span>
+        {safeType}
       </span>
     );
   };
+
   const postComment = async (e) => {
     e.preventDefault();
+    if (!comment.trim()) return;
     try {
-      const res = await axios.post(
+      await axios.post(
         URL + "/api/comments/create",
         { comment: comment, author: user.username, postId: postId, userId: user._id },
         { withCredentials: true }
@@ -95,78 +99,190 @@ const getTypeBadge = (type) => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
-      {loader ? (
-        <div className="h-[80vh] flex justify-center items-center w-full">
-          <Loader />
+
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* BREADCRUMB / BACK LINK */}
+        <div className="mb-6">
+          <Link
+            to="/Electronic"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
+          >
+            <FiArrowLeft className="text-sm" />
+            <span>Back to Campus Feed</span>
+          </Link>
         </div>
-      ) : (
-        <div className="px-4 md:px-8 mt-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-blue-600 md:text-3xl">{post.title}</h1>
-            {getTypeBadge(post.type)}
-            {(user?.role === "admin" || user?._id === post?.userId) && (
-              <div className="flex items-center text-3xl justify-center space-x-2">
-                <p
-                  className="cursor-pointer text-red-600  hover:text-red-400"
-                  onClick={() => navigate("/edit/" + postId)}
-                >
-                  <BiEdit />
-                </p>
-                <p className="cursor-pointer text-red-600 hover:text-red-400" 
-                onClick={handleDeletePost}><MdDelete/></p>
-              </div>
-            )}
+
+        {loader ? (
+          <div className="h-[60vh] flex justify-center items-center w-full">
+            <Loader />
           </div>
-          <div className="flex items-center justify-between mt-2 md:mt-4">
-            <div className="flex space-x-2 ">
-              <p className="text-gray-600">{new Date(post.updatedAt).toString().slice(0, 15)}</p>
-              <p className="text-gray-600">{new Date(post.updatedAt).toString().slice(16, 24)}</p>
-            </div>
-          </div>
-          <img src={IF + post.photo} className="w-[20%] h-[20%] mx-auto mt-8" alt="" />
-          <div className="flex items-center mt-8 space-x-4 font-semibold">
-            <p className="text-green-600">Categories:</p>
-            <div className="flex justify-center items-center space-x-2">
-              {post.categories?.map((c, i) => (
-                <div
-                  key={i}
-                  className="bg-yellow-300 rounded-lg px-3 py-1 text-yellow-800"
-                >
-                  {c}
+        ) : (
+          <div className="space-y-8">
+            {/* MAIN POST DETAILS CARD */}
+            <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden p-6 sm:p-8">
+              
+              {/* TOP HEADER: STATUS, DATE & ACTIONS */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  {getTypeBadge(post.type)}
+
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <FiClock className="text-slate-400" />
+                    <span>
+                      {post.updatedAt && new Date(post.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                {/* EDIT & DELETE (Authorized user or admin) */}
+                {(user?.role === "admin" || user?._id === post?.userId) && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/edit/" + postId)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
+                    >
+                      <BiEdit className="text-sm" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeletePost}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+                    >
+                      <MdDelete className="text-sm" />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* TITLE */}
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-4 mb-3">
+                {post.title}
+              </h1>
+
+              {/* CATEGORIES */}
+              {post.categories && post.categories.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 mb-6">
+                  {post.categories.map((c, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
+                    >
+                      <FiTag className="text-[11px] text-slate-400" />
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* PHOTO DISPLAY */}
+              {post.photo && (
+                <div className="my-6 rounded-xl overflow-hidden border border-slate-200/80 bg-slate-900 flex justify-center items-center max-h-[460px]">
+                  <img
+                    src={IF + post.photo}
+                    alt={post.title}
+                    className="max-h-[460px] w-auto max-w-full object-contain"
+                  />
+                </div>
+              )}
+
+              {/* DESCRIPTION */}
+              <div className="mt-6">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Item Description
+                </h2>
+                <p className="text-sm sm:text-base text-slate-700 leading-relaxed whitespace-pre-line">
+                  {post.desc}
+                </p>
+              </div>
+
+              {/* CONTACT & REPORTER BOX */}
+              <div className="mt-8 bg-slate-50 border border-slate-200/90 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+                    {post.username ? post.username.charAt(0).toUpperCase() : <FiUser />}
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Reported By</p>
+                    <p className="text-sm font-bold text-slate-800">{post.username}</p>
+                  </div>
+                </div>
+
+                {post.contactNo && (
+                  <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-lg border border-slate-200 shadow-xs">
+                    <FiPhone className="text-blue-600 text-base" />
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Contact Number</p>
+                      <a
+                        href={`tel:${post.contactNo}`}
+                        className="text-sm font-semibold text-slate-800 hover:text-blue-600 transition"
+                      >
+                        {post.contactNo}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </article>
+
+            {/* COMMENTS SECTION */}
+            <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <FiMessageSquare className="text-blue-600 text-lg" />
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                    Community Notes &amp; Comments
+                  </h2>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                  {comments?.length || 0}
+                </span>
+              </div>
+
+              {/* COMMENTS LIST */}
+              {comments?.length > 0 ? (
+                <div className="space-y-3 mb-8">
+                  {comments.map((c) => (
+                    <Comment key={c._id} c={c} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400 text-xs sm:text-sm">
+                  No comments yet. Have information regarding this item? Leave a comment below.
+                </div>
+              )}
+
+              {/* WRITE A COMMENT */}
+              <form onSubmit={postComment} className="mt-6 pt-6 border-t border-slate-100">
+                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                  Leave a Note or Claim Message
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    onChange={(e) => setComment(e.target.value)}
+                    value={comment}
+                    type="text"
+                    placeholder="Write a helpful update, location detail, or claim note..."
+                    className="flex-1 px-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                  />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition active:scale-95"
+                  >
+                    <FiSend className="text-xs" />
+                    <span>Post Comment</span>
+                  </button>
+                </div>
+              </form>
+            </section>
           </div>
-          <div>
-            <p className="text-sm md:text-lg text-gray-700 mt-6 mb-4">{post.desc}</p>
-            <p className="text-sm md:text-m text-gray-600">Posted by: {post.username}</p>
-            <p className="text-sm md:text-m text-gray-600">Contact Number: {post.contactNo}</p>
-          </div>
-          <div className="flex flex-col mt-4">
-            <h3 className="text-blue-600 text-xl font-semibold mt-6 mb-4">Comments:</h3>
-            {comments?.map((c) => (
-              <Comment key={c._id} c={c} post={post} />
-            ))}
-          </div>
-          {/* Write a comment */}
-          <div className="w-full flex flex-col mt-4 md:flex-row">
-            <input
-              onChange={(e) => setComment(e.target.value)}
-              type="text"
-              placeholder="Write a comment"
-              className="md:w-[80%] outline-none py-2 px-4 mt-4 md:mt-0 rounded-lg"
-            />
-            <button
-              onClick={postComment}
-              className="bg-blue-600 text-white text-sm px-2 py-2 md:w-[20%] mt-4 md:mt-0 rounded-lg hover:bg-blue-400 hover:text-black"
-            >
-              Add Comment
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </main>
+
       <Footer />
     </div>
   );

@@ -1,44 +1,54 @@
-import axios from "axios"
-import { BiEdit } from "react-icons/bi"
-import { MdDelete } from "react-icons/md"
-import { URL } from "../url"
-import { useContext } from "react"
-import { UserContext } from "../context/UserContext"
+import axios from "axios";
+import { MdDelete } from "react-icons/md";
+import { URL } from "../url";
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 
-const Comment = ({c,post}) => {
+const Comment = ({ c, post }) => {
+  const { user } = useContext(UserContext);
 
-  const {user}=useContext(UserContext)
-  const deleteComment=async(id)=>{
-    try{
-      await axios.delete(URL+"/api/comments/"+id,{withCredentials:true})
-      window.location.reload(true)
+  const deleteComment = async (id) => {
+    try {
+      await axios.delete(URL + "/api/comments/" + id, { withCredentials: true });
+      window.location.reload(true);
+    } catch (err) {
+      console.log(err);
     }
-    catch(err){
-      console.log(err)
-    }
-  }
-  // console.log(post.userId)
-  // console.log(user._id)
-  // console.log(post)
-  // console.log(user)
+  };
+
+  const initial = c.author ? c.author.charAt(0).toUpperCase() : "?";
+
   return (
-    <div className="px-2 py-2 bg-gray-200 rounded-lg my-2">
-           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-gray-600">@{c.author}</h3>
-            <div className="flex justify-center items-center space-x-4">
-            <p>{new Date(c.updatedAt).toString().slice(0,15)}</p>
-            <p>{new Date(c.updatedAt).toString().slice(16,24)}</p>
-            {user?._id===c?.userId?
-              <div className="flex items-center justify-center space-x-2">
-                    <p className="cursor-pointer" onClick={()=>deleteComment(c._id)}><MdDelete/></p>
-                </div>:""}
-                
-            </div>
-           </div>
-           <p className="px-4 mt-2">{c.comment}</p>
+    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 my-3 hover:bg-slate-50/90 transition">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs flex items-center justify-center shrink-0">
+            {initial}
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+            <span className="font-semibold text-xs sm:text-sm text-slate-800">@{c.author}</span>
+            <span className="text-[11px] text-slate-400">
+              {new Date(c.updatedAt).toLocaleDateString()} at {new Date(c.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        </div>
 
-           </div>
-  )
-}
+        {user?._id === c?.userId && (
+          <button
+            onClick={() => deleteComment(c._id)}
+            title="Delete comment"
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+          >
+            <MdDelete className="text-base" />
+          </button>
+        )}
+      </div>
 
-export default Comment
+      <p className="mt-2 text-sm text-slate-700 leading-relaxed sm:pl-9">
+        {c.comment}
+      </p>
+    </div>
+  );
+};
+
+export default Comment;

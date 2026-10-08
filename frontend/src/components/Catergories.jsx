@@ -1,21 +1,28 @@
-import { Link } from "react-router-dom"
-
+import { Link } from "react-router-dom";
+import { FiArrowRight } from "react-icons/fi";
 
 const Catergories = () => {
   return (
-    <div className="items-center md:px-[200px] py-10">
-
-      <div className="w-[80%] items-center justify-center  ml-56 pr-52"> 
-        <Link to ="/Electronic"><button className="w-full mt-10 px-4 py-4 text-3xl font-bold text-white bg-black rounded-xl
-         hover:bg-gray-300 hover:text-black">Click Here To Continue !</button></Link>
-
-         <p>Find Your Lost Items in Public Places Just a Click</p>
-
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 text-center">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+          Find Your Lost Items in Public Places Just a Click
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-6">
+          Access the full campus lost and found catalogue to check recently submitted findings.
+        </p>
+        <Link to="/Electronic">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-xs transition active:scale-95"
+          >
+            <span>Click Here To Continue !</span>
+            <FiArrowRight className="text-base" />
+          </button>
+        </Link>
       </div>
-      
-
     </div>
-       
-)
-  }
-export default Catergories
+  );
+};
+
+export default Catergories;
