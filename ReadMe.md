@@ -1,43 +1,120 @@
-## ⚙️ Prerequisites
+# Lost & Found — MERN Web Application
 
-Before running this project locally, make sure you have the following tools installed:
+A full-stack Lost & Found web application for posting and discovering lost or found items. The repository includes the application source code and a project/internship report.
 
-- [Node.js](https://nodejs.org/) (LTS version recommended)
-- [MongoDB Community Server](https://www.mongodb.com/try/download/community) – for local database setup
-- [VS Code](https://code.visualstudio.com/) – or any preferred code editor
+## Features
 
----
+The repository contains frontend and backend code for:
+- User registration and login
+- User profiles and item posts
+- Comments and post interactions
+- Image uploads
+- An admin area
+- MongoDB-backed data storage
 
-## 🚀 How to Run This Project Locally
+Feature availability and permissions depend on the current implementation; review the route files before deploying publicly.
 
-Follow these steps to set up and run the project on your local system:
+## Tech stack
 
-### 📂 Step 1: Open the Project in VS Code
+| Layer | Technologies |
+|---|---|
+| Frontend | React 18, Vite, React Router, Axios |
+| Backend | Node.js, Express 4 |
+| Database | MongoDB, Mongoose |
+| Authentication libraries | bcrypt, JSON Web Token, cookie-parser |
+| Uploads | Multer |
 
-You can either open the folder manually or use the following command if VS Code is added to your system's PATH:
+## Repository structure
 
-Step 2: Start the Frontend
-Open a terminal in VS Code and run the following commands:
+```text
+Lost-and-Found-MERN-Project-with-Report/
+├── backend/
+│   ├── routes/       # Authentication, users, posts, comments, admin
+│   ├── models/       # Mongoose models
+│   ├── images/       # Uploaded item images (runtime storage)
+│   └── index.js      # Express entry point
+├── frontend/
+│   └── src/          # React application
+└── ReadMe.md
+```
 
+## Prerequisites
 
-cd frontend
-npm i (for first time only)
-npm run dev
+- Node.js (LTS recommended)
+- npm
+- MongoDB local instance or MongoDB Atlas
+- Git
 
-This will start the React frontend on http://localhost:5173 or http://localhost:3000.
+## Run locally
 
-🔧 Step 3: Start the Backend
-Open a new terminal in VS Code (don’t close the frontend terminal), and run the following commands:
+### 1. Clone the repository
 
+```bash
+git clone https://github.com/yashvardhanmishra79-commits/Lost-and-Found-MERN-Project-with-Report.git
+cd Lost-and-Found-MERN-Project-with-Report
+```
+
+### 2. Configure the backend
+
+Create a file named `backend/.env`:
+
+```env
+MONGO_URL=mongodb://127.0.0.1:27017/LostAndFound
+PORT=5000
+SECRET=replace-this-with-a-long-random-secret
+```
+
+Choose an unused port if needed. The `SECRET` value is used to sign JSON Web Tokens. Keep it private, use a different value in production, and never commit `.env`.
+
+### 3. Install and start the backend
+
+Open a terminal in the repository root:
+
+```bash
 cd backend
-npm i (for first time only)
+npm install
+npm run dev
+```
+
+The backend's `start` script is also available:
+
+```bash
 npm start
-If everything is working correctly, you should see console messages like:
+```
 
-Server is running...
-MongoDB Connected...
-This confirms that your backend server is working perfectly.
+### 4. Install and start the frontend
 
+Open a **second terminal** in the repository root:
 
-Creating Admin:
-First Register a user through frontend then open mongodb compass find DB "LostAndFound" go to users collection find the currently added user and update its role to admin and save and then login through that id to access admin dashboard.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite (commonly `http://localhost:5173`).
+
+The backend currently configures credentialed CORS for `http://localhost:5173`. If your frontend uses another origin, update the backend CORS configuration intentionally rather than enabling unrestricted origins.
+
+## Creating an admin account
+
+The current project instructions describe registering a user and changing that user's role directly in MongoDB Compass. This is a manual development workaround, not a safe production provisioning process. Do not expose an admin account or database to untrusted users.
+
+## Troubleshooting
+
+- **MongoDB connection fails:** confirm MongoDB is running and that `MONGO_URL` in `backend/.env` is correct.
+- **Login or cookie issues:** check that frontend and backend origins match the CORS configuration and that credentials are handled consistently.
+- **Image upload fails:** confirm the backend process can write to its configured image-upload directory.
+- **Frontend cannot reach the API:** inspect the API base URL in the frontend source and confirm the backend port.
+
+## Security and deployment notes
+
+Before using this project with real users, review authentication and authorization across all routes, validate uploads and user input, restrict CORS to trusted origins, use HTTPS, and configure persistent storage for uploaded images. Do not store secrets in source control.
+
+## Project report
+
+The repository also contains the associated project report. See the repository files for the report document.
+
+## License
+
+No license file was found during this README review. Add a license file if you intend to permit reuse or redistribution.
